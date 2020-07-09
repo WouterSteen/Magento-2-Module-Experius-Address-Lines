@@ -42,6 +42,7 @@ class LayoutProcessor implements \Magento\Checkout\Block\Checkout\LayoutProcesso
 
         }
 
+
         $result = $this->getBillingFormFields($result);
 
         return $result;
@@ -52,31 +53,19 @@ class LayoutProcessor implements \Magento\Checkout\Block\Checkout\LayoutProcesso
 
         if(isset($result['components']['checkout']['children']['steps']['children']
             ['billing-step']['children']['payment']['children']
-            ['payments-list'])) {
+            ['afterMethods'])) {
 
-            $paymentForms = $result['components']['checkout']['children']['steps']['children']
+
+            $billingFields = $result['components']['checkout']['children']['steps']['children']
             ['billing-step']['children']['payment']['children']
-            ['payments-list']['children'];
+            ['afterMethods']['children']['billing-address-form']['children']['form-fields']['children'];
 
-            foreach ($paymentForms as $paymentMethodForm => $paymentMethodValue) {
+            $billingFields = $this->modifyStreetUiComponents($billingFields);
 
-                $paymentMethodCode = str_replace('-form', '', $paymentMethodForm);
+            $result['components']['checkout']['children']['steps']['children']
+            ['billing-step']['children']['payment']['children']
+            ['afterMethods']['children']['billing-address-form']['children']['form-fields']['children'] = $billingFields;
 
-                if (!isset($result['components']['checkout']['children']['steps']['children']['billing-step']['children']['payment']['children']['payments-list']['children'][$paymentMethodCode . '-form'])) {
-                    continue;
-                }
-
-                $billingFields = $result['components']['checkout']['children']['steps']['children']
-                ['billing-step']['children']['payment']['children']
-                ['payments-list']['children'][$paymentMethodCode . '-form']['children']['form-fields']['children'];
-
-                $billingFields = $this->modifyStreetUiComponents($billingFields);
-
-                $result['components']['checkout']['children']['steps']['children']
-                ['billing-step']['children']['payment']['children']
-                ['payments-list']['children'][$paymentMethodCode . '-form']['children']['form-fields']['children'] = $billingFields;
-
-            }
         }
 
         return $result;
@@ -106,12 +95,12 @@ class LayoutProcessor implements \Magento\Checkout\Block\Checkout\LayoutProcesso
         $lineCount = 0;
 
         while($lineCount < 4){
- 
+
             $lineNumber = $lineCount+1;
 
             if(isset($addressResult['street']['children'][$lineCount])){
                 $label = $this->addressLineHelper->getLineLabel($lineNumber);
-                
+
                 if ( $this->addressLineHelper->isLineEnabled($lineNumber)) {
                     $addressResult['street']['children'][$lineCount]['label'] = $label;
                     $addressResult['street']['children'][$lineCount]['additionalClasses'] = 'experius-address-line-one';
